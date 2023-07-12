@@ -4,12 +4,14 @@ const port = 3000;
 const path = require('path');
 const mongoose = require('mongoose');
 const Campground = require('./models/campGrounds');
+const review = require("./models/reviews");
 const {campgroundSchema} = require('./validateSchemas');
 const catchAsync = require('./utils/catchAsync');
 const ExpressError = require("./utils/ExpressError");
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
+const Review = require('./models/reviews');
 
 mongoose.connect('mongodb://127.0.0.1:27017/yelp-camp',{
     useNewUrlParser:true,
@@ -93,6 +95,16 @@ app.put("/campgrounds/edit/:id", catchAsync(async(req,res)=>{
         throw new ExpressError(msg,400);
     }
     const campground = await Campground.findByIdAndUpdate(id,req.body.campground,{new:true,runValidators:true});
+    res.redirect(`/campgrounds/show/${campground.id}`);
+}))
+
+app.post("/campgrounds/:id/review",catchAsync(async(req,res)=>{
+    const{id} = req.params;
+    const review = new Review(req.body.review);
+    const campground = await Campground.findById(id);
+    campground.reviews.push(review);
+    await campground.save();
+    await review.save();
     res.redirect(`/campgrounds/show/${campground.id}`);
 }))
 
