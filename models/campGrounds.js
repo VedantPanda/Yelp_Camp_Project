@@ -7,7 +7,11 @@ const campGroundSchema = new Schema(
         price:Number,
         image:String,
         description:String,
-        location:String
+        location:String,
+        review:[{
+            type:Schema.Types.ObjectId,
+            ref:"Review"
+        }]
     }
 );
 
