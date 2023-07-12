@@ -56,7 +56,7 @@ app.get("/campgrounds/edit/:id", catchAsync(async(req,res)=>{
 //Storing the data of the newly created campground in the database
 app.post("/campgrounds", catchAsync(async(req,res)=>{
     const {error} = campgroundSchema.validate(req.body);
-    console.log(req.body);
+    //console.log(error);
     if(error){
         const msg = error.details.map((el)=>el.message).join(",");
         //console.log(msg);
