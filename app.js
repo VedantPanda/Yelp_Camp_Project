@@ -5,7 +5,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const Campground = require('./models/campGrounds');
 const review = require("./models/reviews");
-const {campgroundSchema} = require('./validateSchemas');
+const {campgroundSchema,reviewSchema} = require('./validateSchemas');
 const catchAsync = require('./utils/catchAsync');
 const ExpressError = require("./utils/ExpressError");
 const bodyParser = require('body-parser');
@@ -33,6 +33,28 @@ app.set('views',path.join(__dirname,'views'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 
+const validateCampground = (req,res,next) => {
+    const{error} = campgroundSchema.validate(req.body);
+    if(error){
+        const msg = error.details.map((el)=>el.message).join(",");
+        throw new ExpressError(msg,404);
+    }
+    else{
+        next();
+    }
+}
+
+const validateReview = (req,res,next) => {
+    const{error} = reviewSchema.validate(req.body);
+    if(error){
+        const msg = error.details.map(el=>el.message).join(",");
+        throw new ExpressError(msg,404);
+    }
+    else{
+        next();
+    }
+}
+
 app.get("/",(req,res)=>{
     res.render('home')
 })
@@ -56,14 +78,7 @@ app.get("/campgrounds/edit/:id", catchAsync(async(req,res)=>{
 }))
 
 //Storing the data of the newly created campground in the database
-app.post("/campgrounds", catchAsync(async(req,res)=>{
-    const {error} = campgroundSchema.validate(req.body);
-    //console.log(error);
-    if(error){
-        const msg = error.details.map((el)=>el.message).join(",");
-        //console.log(msg);
-        throw new ExpressError(msg,400);
-    }
+app.post("/campgrounds", validateCampground, catchAsync(async(req,res)=>{
     const newCampground = new Campground(req.body.campground);
     await newCampground.save();
     res.redirect(`/campgrounds/show/${newCampground.id}`);
@@ -86,19 +101,12 @@ app.delete("/campgrounds/delete/:id", catchAsync(async(req,res)=>{
 }))
 
 //Stores the edited data into the database
-app.put("/campgrounds/edit/:id", catchAsync(async(req,res)=>{
-    const {error} = campgroundSchema.validate(req.body);
-    console.log(req.body);
-    if(error){
-        const msg = error.details.map((el)=>el.message).join(",");
-        //console.log(msg);
-        throw new ExpressError(msg,400);
-    }
+app.put("/campgrounds/edit/:id", validateCampground, catchAsync(async(req,res)=>{
     const campground = await Campground.findByIdAndUpdate(id,req.body.campground,{new:true,runValidators:true});
     res.redirect(`/campgrounds/show/${campground.id}`);
 }))
 
-app.post("/campgrounds/:id/review",catchAsync(async(req,res)=>{
+app.post("/campgrounds/:id/review", validateReview, catchAsync(async(req,res)=>{
     const{id} = req.params;
     const review = new Review(req.body.review);
     const campground = await Campground.findById(id);
