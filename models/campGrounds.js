@@ -15,4 +15,12 @@ const campGroundSchema = new Schema(
     }
 );
 
+campGroundSchema.post("findOneAndDelete",async function(campground){
+    if(campground){
+        const Review = require("./reviews");
+        const msg = await Review.deleteMany({_id:{$in:campground.reviews}});
+       // console.log(msg);
+    }
+})
+
 module.exports = mongoose.model('Campground',campGroundSchema);
