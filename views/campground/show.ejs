@@ -30,5 +30,15 @@
             </div>
             <button class="btn btn-success">Submit</button>
           </form>
+          <div class="mb-3">
+            <% if(campground.reviews.length!=0){ %>
+                  <% for(let review of campground.reviews){ %>
+                    <p>Rating: <%= review.rating %></p>
+                    <p>Review: <%= review.body %></p>
+                  <% } %>
+            <% }else{ %>
+              <h4>No reviews yet</h4>
+            <% } %>  
+          </div>
     </div>
 </div>
