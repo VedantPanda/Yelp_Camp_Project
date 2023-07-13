@@ -4,7 +4,6 @@ const port = 3000;
 const path = require('path');
 const mongoose = require('mongoose');
 const Campground = require('./models/campGrounds');
-const review = require("./models/reviews");
 const {campgroundSchema,reviewSchema} = require('./validateSchemas');
 const catchAsync = require('./utils/catchAsync');
 const ExpressError = require("./utils/ExpressError");
@@ -114,6 +113,14 @@ app.post("/campgrounds/:id/review", validateReview, catchAsync(async(req,res)=>{
     await campground.save();
     await review.save();
     res.redirect(`/campgrounds/show/${campground.id}`);
+}))
+
+app.delete("/campgrounds/:id/reviews/:reviewId",catchAsync(async(req,res)=>{
+    const campgroundId = req.params.id;
+    const {reviewId} = req.params;
+    await Campground.findByIdAndUpdate(campgroundId,{$pull:{reviews:reviewId}});
+    await Review.findByIdAndDelete(reviewId);
+    res.redirect(`/campgrounds/show/${campgroundId}`);
 }))
 
 //Used to throw error to the error handling middleware when a route is called which does not exist
