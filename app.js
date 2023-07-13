@@ -88,7 +88,7 @@ app.post("/campgrounds", validateCampground, catchAsync(async(req,res)=>{
 app.get("/campgrounds/show/:id", catchAsync(async(req,res)=>{
     const {id} = req.params;
     //console.log(id);
-    const campground = await Campground.findById(id);
+    const campground = await Campground.findById(id).populate('reviews');
     //console.log(campground);
     res.render("campground/show",{campground});
 }))
