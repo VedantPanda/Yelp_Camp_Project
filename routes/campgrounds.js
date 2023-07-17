@@ -60,6 +60,7 @@ router.delete("/delete/:id", catchAsync(async(req,res)=>{
 
 //Stores the edited data into the database
 router.put("/edit/:id", validateCampground, catchAsync(async(req,res)=>{
+    const{id} = req.params;
     const campground = await Campground.findByIdAndUpdate(id,req.body.campground,{new:true,runValidators:true});
     res.redirect(`/campgrounds/show/${campground.id}`);
 }))
