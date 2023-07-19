@@ -13,6 +13,8 @@ const ejsMate = require('ejs-mate');
 const Review = require('./models/reviews');
 const campgroundRoutes = require('./routes/campgrounds');
 const reviewRoutes = require('./routes/reviews');
+const session = require('express-session');
+const flash = require('connect-flash');
 
 mongoose.connect('mongodb://127.0.0.1:27017/yelp-camp',{
     useNewUrlParser:true,
@@ -38,6 +40,19 @@ app.use(express.static(path.join(__dirname,'public')));
 app.use("/campgrounds",campgroundRoutes);
 app.use("/campgrounds/:id/review",reviewRoutes);
 
+const configSession = {
+    secret:"secret-key",
+    resave:false,
+    saveUninitialized:true,
+    cookie:{
+        httpOnly:true,
+        expires:Date.now() + 1000*60*60*24*7,
+        maxAge:1000*60*60*24*7
+    }
+}
+
+app.use(session(configSession));
+app.use(flash());
 
 const validateReview = (req,res,next) => {
     const{error} = reviewSchema.validate(req.body);
@@ -53,27 +68,6 @@ const validateReview = (req,res,next) => {
 app.get("/",(req,res)=>{
     res.render('home')
 })
-
-
-
-
-app.post("/campgrounds/:id/review", validateReview, catchAsync(async(req,res)=>{
-    const{id} = req.params;
-    const review = new Review(req.body.review);
-    const campground = await Campground.findById(id);
-    campground.reviews.push(review);
-    await campground.save();
-    await review.save();
-    res.redirect(`/campgrounds/show/${campground.id}`);
-}))
-
-app.delete("/campgrounds/:id/reviews/:reviewId",catchAsync(async(req,res)=>{
-    const campgroundId = req.params.id;
-    const {reviewId} = req.params;
-    await Campground.findByIdAndUpdate(campgroundId,{$pull:{reviews:reviewId}});
-    await Review.findByIdAndDelete(reviewId);
-    res.redirect(`/campgrounds/show/${campgroundId}`);
-}))
 
 //Used to throw error to the error handling middleware when a route is called which does not exist
 app.all("*",(req,res,next)=>{
