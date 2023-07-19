@@ -3,13 +3,15 @@ const app = express();
 const port = 3000;
 const path = require('path');
 const mongoose = require('mongoose');
+const Campground = require('./models/campGrounds');
+const {reviewSchema} = require('./validateSchemas');
+const catchAsync = require('./utils/catchAsync');
+const ExpressError = require("./utils/ExpressError");
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
-const ExpressError = require('./utils/ExpressError');
-
+const Review = require('./models/reviews');
 const campgroundRoutes = require('./routes/campgrounds');
-const reviewRoutes = require('./routes/reviews');
 
 mongoose.connect('mongodb://127.0.0.1:27017/yelp-camp',{
     useNewUrlParser:true,
@@ -33,11 +35,44 @@ app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname,'public')));
 
 app.use("/campgrounds",campgroundRoutes);
-app.use("/campgrounds/:id/review",reviewRoutes);
+
+
+
+const validateReview = (req,res,next) => {
+    const{error} = reviewSchema.validate(req.body);
+    if(error){
+        const msg = error.details.map(el=>el.message).join(",");
+        throw new ExpressError(msg,404);
+    }
+    else{
+        next();
+    }
+}
 
 app.get("/",(req,res)=>{
     res.render('home')
 })
+
+
+
+
+app.post("/campgrounds/:id/review", validateReview, catchAsync(async(req,res)=>{
+    const{id} = req.params;
+    const review = new Review(req.body.review);
+    const campground = await Campground.findById(id);
+    campground.reviews.push(review);
+    await campground.save();
+    await review.save();
+    res.redirect(`/campgrounds/show/${campground.id}`);
+}))
+
+app.delete("/campgrounds/:id/reviews/:reviewId",catchAsync(async(req,res)=>{
+    const campgroundId = req.params.id;
+    const {reviewId} = req.params;
+    await Campground.findByIdAndUpdate(campgroundId,{$pull:{reviews:reviewId}});
+    await Review.findByIdAndDelete(reviewId);
+    res.redirect(`/campgrounds/show/${campgroundId}`);
+}))
 
 //Used to throw error to the error handling middleware when a route is called which does not exist
 app.all("*",(req,res,next)=>{
