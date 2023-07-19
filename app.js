@@ -12,6 +12,7 @@ const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
 const Review = require('./models/reviews');
 const campgroundRoutes = require('./routes/campgrounds');
+const reviewRoutes = require('./routes/reviews');
 
 mongoose.connect('mongodb://127.0.0.1:27017/yelp-camp',{
     useNewUrlParser:true,
@@ -35,7 +36,7 @@ app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname,'public')));
 
 app.use("/campgrounds",campgroundRoutes);
-
+app.use("/campgrounds/:id/review",reviewRoutes);
 
 
 const validateReview = (req,res,next) => {
