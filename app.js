@@ -9,8 +9,12 @@ const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
 const campgroundRoutes = require('./routes/campgrounds');
 const reviewRoutes = require('./routes/reviews');
+const userRoutes = require('./routes/users');
 const session = require('express-session');
 const flash = require('connect-flash');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+const User = require('./models/users');
 
 mongoose.connect('mongodb://127.0.0.1:27017/yelp-camp',{
     useNewUrlParser:true,
@@ -53,6 +57,20 @@ app.use((req,res,next)=>{
     next();
 })
 
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+app.get("/fakeUser",async(req,res)=>{
+    const user = new User({email:'colttt@gmail.com',username:'colttt'});
+    const newUser = await User.register(user,'chicken');
+    res.send(newUser);
+})
+
+app.use("/",userRoutes);
 app.use("/campgrounds",campgroundRoutes);
 app.use("/campgrounds/:id/review",reviewRoutes);
 
