@@ -4,7 +4,7 @@ const catchAsync = require('../utils/catchAsync');
 const Campground = require('../models/campGrounds');
 const ExpressError = require("../utils/ExpressError");
 const {campgroundSchema} = require('../validateSchemas');
-
+const {isLoggedIn} = require('../routes/middleware');
 
 const validateCampground = (req,res,next) => {
     const{error} = campgroundSchema.validate(req.body);
@@ -24,12 +24,12 @@ router.get("/", catchAsync(async(req,res)=>{
 }))
 
 //Route to add new campground
-router.get("/new",(req,res)=>{
+router.get("/new",isLoggedIn, (req,res)=>{
     res.render("campground/new");
 })
 
 //Route to edit existing campground
-router.get("/edit/:id", catchAsync(async(req,res)=>{
+router.get("/edit/:id", isLoggedIn, catchAsync(async(req,res)=>{
     const {id} = req.params;
     const campground = await Campground.findById(id);
     if(!campground){
@@ -40,7 +40,7 @@ router.get("/edit/:id", catchAsync(async(req,res)=>{
 }))
 
 //Storing the data of the newly created campground in the database
-router.post("/", validateCampground, catchAsync(async(req,res)=>{
+router.post("/", isLoggedIn, validateCampground, catchAsync(async(req,res)=>{
     const newCampground = new Campground(req.body.campground);
     await newCampground.save();
     req.flash('success','Successfully made a new campground!');
@@ -61,7 +61,7 @@ router.get("/show/:id", catchAsync(async(req,res)=>{
 }))
 
 //Route to delete an existing campground
-router.delete("/delete/:id", catchAsync(async(req,res)=>{
+router.delete("/delete/:id", isLoggedIn, catchAsync(async(req,res)=>{
     const {id} = req.params;
     await Campground.findByIdAndDelete(id);
     req.flash("success","Campground deleted successfully!");
@@ -69,7 +69,7 @@ router.delete("/delete/:id", catchAsync(async(req,res)=>{
 }))
 
 //Stores the edited data into the database
-router.put("/edit/:id", validateCampground, catchAsync(async(req,res)=>{
+router.put("/edit/:id", isLoggedIn, validateCampground, catchAsync(async(req,res)=>{
     const{id} = req.params;
     const campground = await Campground.findByIdAndUpdate(id,req.body.campground,{new:true,runValidators:true});
     req.flash("success","Successfully updated campground!")
