@@ -4,12 +4,13 @@ const User = require('../models/users');
 const catchAsync = require('../utils/catchAsync');
 const ExpressError = require("../utils/ExpressError");
 const passport = require('passport');
+const {login} = require('./middleware');
 
-router.get("/register",(req,res)=>{
+router.get("/register",login,(req,res)=>{
     res.render('user/register');
 })
 
-router.post("/register",catchAsync(async(req,res)=>{
+router.post("/register",login,catchAsync(async(req,res)=>{
     try{
         const{username,email,password} = req.body;
         const user = new User({username:username,email:email});
@@ -23,11 +24,11 @@ router.post("/register",catchAsync(async(req,res)=>{
     }
 }))
 
-router.get("/login",(req,res)=>{
+router.get("/login",login,(req,res)=>{
     res.render("user/login");
 })
 
-router.post("/login",passport.authenticate('local',{failureFlash:true,failureRedirect:"/login"}),async(req,res)=>{
+router.post("/login",login,passport.authenticate('local',{failureFlash:true,failureRedirect:"/login"}),async(req,res)=>{
     req.flash('success','Welcome back!');
     res.redirect('/campgrounds');
 })
