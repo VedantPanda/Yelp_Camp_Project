@@ -7,3 +7,9 @@ module.exports.isLoggedIn = (req,res,next) => {
 }
     
 
+module.exports.login = (req,res,next) => {
+    if(req.isAuthenticated()){
+        return res.redirect("/campgrounds");
+    }
+    next();
+}
