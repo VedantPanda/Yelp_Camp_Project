@@ -8,6 +8,10 @@ const campGroundSchema = new Schema(
         image:String,
         description:String,
         location:String,
+        author:{
+            type:Schema.Types.ObjectId,
+            ref:"user"
+        },
         reviews:[{
             type:Schema.Types.ObjectId,
             ref:"Review"
