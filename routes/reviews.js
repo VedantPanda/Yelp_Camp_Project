@@ -5,7 +5,7 @@ const ExpressError = require("../utils/ExpressError");
 const Campground = require('../models/campGrounds');
 const Review = require('../models/reviews');
 const {validateReview} = require('./middleware');
-const {isLoggedIn} = require('./middleware');
+const {isLoggedIn,isReviewAuthorized} = require('./middleware');
 
 router.post("/", isLoggedIn, validateReview, catchAsync(async(req,res)=>{
     const{id} = req.params;
@@ -19,7 +19,7 @@ router.post("/", isLoggedIn, validateReview, catchAsync(async(req,res)=>{
     res.redirect(`/campgrounds/show/${campground.id}`);
 }))
 
-router.delete("/:reviewId",isLoggedIn, catchAsync(async(req,res)=>{
+router.delete("/:reviewId", isLoggedIn, isReviewAuthorized, catchAsync(async(req,res)=>{
     const campgroundId = req.params.id;
     const {reviewId} = req.params;
     await Campground.findByIdAndUpdate(campgroundId,{$pull:{reviews:reviewId}});

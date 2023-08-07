@@ -1,6 +1,7 @@
 const {reviewSchema,campgroundSchema} = require('../validateSchemas');
 const ExpressError = require("../utils/ExpressError");
 const Campground = require('../models/campGrounds');
+const Review = require('../models/reviews');
 
 module.exports.isLoggedIn = (req,res,next) => {
     if(!req.isAuthenticated()){
@@ -55,6 +56,21 @@ module.exports.isAuthorized = async(req,res,next) => {
         return res.redirect(`/campgrounds`);
     }
     if(!campground.author.equals(req.user._id)){
+        req.flash("error","You do not have permission to do that!");
+        return res.redirect(`/campgrounds/show/${id}`);
+    }
+    next();
+}
+
+module.exports.isReviewAuthorized = async(req,res,next) => {
+    const {id} = req.params;
+    const {reviewId} = req.params;
+    const review = await Review.findById(reviewId);
+    if(!review){
+        req.flash("error","Review does not exist");
+        return res.redirect(`/campgrounds/show/${id}`);
+    }
+    if(!review.author.equals(req.user._id)){
         req.flash("error","You do not have permission to do that!");
         return res.redirect(`/campgrounds/show/${id}`);
     }
