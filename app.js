@@ -66,11 +66,9 @@ app.use((req,res,next)=>{
     next();
 })
 
-app.use("/",userRoutes);
 app.use("/campgrounds",campgroundRoutes);
 app.use("/campgrounds/:id/review",reviewRoutes);
-
-
+app.use("/",userRoutes);
 
 app.get("/",(req,res)=>{
     res.render('home')
