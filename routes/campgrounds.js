@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 const catchAsync = require('../utils/catchAsync');
 const Campground = require('../models/campGrounds');
-const {validateCampground} = require('./middleware');
-const {isLoggedIn,isAuthorized} = require('./middleware');
+const {validateCampground} = require('../middleware');
+const {isLoggedIn,isAuthorized} = require('../middleware');
 
 //Renders all the campgrounds
 router.get("/", catchAsync(async(req,res)=>{
