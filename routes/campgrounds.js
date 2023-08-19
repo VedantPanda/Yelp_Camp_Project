@@ -4,6 +4,9 @@ const catchAsync = require('../utils/catchAsync');
 const {validateCampground} = require('../middleware');
 const {isLoggedIn,isAuthorized} = require('../middleware');
 const campgrounds = require('../controllers/campgrounds');
+const multer = require('multer');
+const {storage} = require('../cloudinary');
+const upload = multer({storage});
 
 //Renders all the campgrounds
 router.get("/", catchAsync(campgrounds.index));
@@ -15,7 +18,7 @@ router.get("/new",isLoggedIn,campgrounds.newCampground);
 router.get("/edit/:id", isLoggedIn, isAuthorized, catchAsync(campgrounds.editCampgroundForm));
 
 //Storing the data of the newly created campground in the database
-router.post("/", isLoggedIn, validateCampground, catchAsync(campgrounds.createNewCampground));
+router.post("/", isLoggedIn, upload.array('image'), validateCampground, catchAsync(campgrounds.createNewCampground));
 
 //Showing the details of the specific campground
 router.get("/show/:id", catchAsync(campgrounds.showCampground));
