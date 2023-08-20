@@ -28,7 +28,7 @@ module.exports.editCampgroundForm = async(req,res)=>{
 
 module.exports.editCampground = async(req,res)=>{
     const{id} = req.params;
-    console.log(req.body);
+    //console.log(req.body);
     const campground = await Campground.findByIdAndUpdate(id,req.body.campground,{new:true,runValidators:true});
     const imgs = req.files.map(f=>({url:f.path,filename:f.filename}));
     campground.images.push(...imgs);
