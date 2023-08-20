@@ -27,6 +27,6 @@ router.get("/show/:id", catchAsync(campgrounds.showCampground));
 router.delete("/delete/:id", isLoggedIn, isAuthorized, catchAsync(campgrounds.deleteCampground));
 
 //Stores the edited data into the database
-router.put("/edit/:id", isLoggedIn, isAuthorized, validateCampground, catchAsync(campgrounds.editCampground));
+router.put("/edit/:id", isLoggedIn, isAuthorized, upload.array('image'), validateCampground, catchAsync(campgrounds.editCampground));
 
 module.exports = router;
